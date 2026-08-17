@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import prisma from '../utils/prisma';
 import { AuthRequest } from '../middlewares/auth.middleware';
+import { sendOtpEmail } from '../utils/email';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -24,36 +25,40 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     });
 
     if (existingUser) {
-      return res.status(409).json({ success: false, message: 'Email already in use' });
+      return res.status(409).json({
+        success: false,
+        message: 'Email already in use'
+      });
     }
 
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(validatedData.password, salt);
 
-    const user = await prisma.user.create({
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    const expiresInMinutes = Number(process.env.OTP_EXPIRES_MINUTES || 10);
+    const otpExpiresAt = new Date(
+      Date.now() + expiresInMinutes * 60 * 1000
+    );
+
+    await prisma.user.create({
       data: {
         name: validatedData.name,
         email: validatedData.email,
-        passwordHash
+        passwordHash,
+        otpCode: otp,
+        otpExpiresAt,
+        emailVerified: false
       }
     });
 
-    const token = jwt.sign(
-      { userId: user.id },
-      process.env.JWT_SECRET || 'supersecretkey',
-      { expiresIn: '7d' }
-    );
+    await sendOtpEmail(validatedData.email, otp);
 
     res.status(201).json({
       success: true,
-      message: 'User registered successfully',
+      message: 'Verification code sent to your email',
       data: {
-        token,
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email
-        }
+        email: validatedData.email
       }
     });
   } catch (error) {
