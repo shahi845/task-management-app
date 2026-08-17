@@ -134,6 +134,87 @@ export const getMe = async (req: AuthRequest, res: Response, next: NextFunction)
     next(error);
   }
 };
+export const verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email and OTP are required'
+      });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    if (user.emailVerified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is already verified'
+      });
+    }
+
+    if (!user.otpCode || !user.otpExpiresAt) {
+      return res.status(400).json({
+        success: false,
+        message: 'No verification code found'
+      });
+    }
+
+    if (new Date() > user.otpExpiresAt) {
+      return res.status(400).json({
+        success: false,
+        message: 'Verification code has expired'
+      });
+    }
+
+    if (user.otpCode !== otp) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid verification code'
+      });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerified: true,
+        otpCode: null,
+        otpExpiresAt: null
+      }
+    });
+
+    const token = jwt.sign(
+      { userId: updatedUser.id },
+      process.env.JWT_SECRET || 'supersecretkey',
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      success: true,
+      message: 'Email verified successfully',
+      data: {
+        token,
+        user: {
+          id: updatedUser.id,
+          name: updatedUser.name,
+          email: updatedUser.email
+        }
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const logout = async (req: Request, res: Response) => {
   // Client should delete the token
