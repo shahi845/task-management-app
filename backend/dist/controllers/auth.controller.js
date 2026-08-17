@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logout = exports.getMe = exports.login = exports.register = void 0;
+exports.logout = exports.verifyOtp = exports.getMe = exports.login = exports.register = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const zod_1 = require("zod");
@@ -127,6 +127,75 @@ const getMe = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.getMe = getMe;
+const verifyOtp = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { email, otp } = req.body;
+        if (!email || !otp) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email and OTP are required'
+            });
+        }
+        const user = yield prisma_1.default.user.findUnique({
+            where: { email }
+        });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+        if (user.emailVerified) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email is already verified'
+            });
+        }
+        if (!user.otpCode || !user.otpExpiresAt) {
+            return res.status(400).json({
+                success: false,
+                message: 'No verification code found'
+            });
+        }
+        if (new Date() > user.otpExpiresAt) {
+            return res.status(400).json({
+                success: false,
+                message: 'Verification code has expired'
+            });
+        }
+        if (user.otpCode !== otp) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid verification code'
+            });
+        }
+        const updatedUser = yield prisma_1.default.user.update({
+            where: { id: user.id },
+            data: {
+                emailVerified: true,
+                otpCode: null,
+                otpExpiresAt: null
+            }
+        });
+        const token = jsonwebtoken_1.default.sign({ userId: updatedUser.id }, process.env.JWT_SECRET || 'supersecretkey', { expiresIn: '7d' });
+        res.json({
+            success: true,
+            message: 'Email verified successfully',
+            data: {
+                token,
+                user: {
+                    id: updatedUser.id,
+                    name: updatedUser.name,
+                    email: updatedUser.email
+                }
+            }
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.verifyOtp = verifyOtp;
 const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // Client should delete the token
     res.json({ success: true, message: 'Logged out successfully' });
