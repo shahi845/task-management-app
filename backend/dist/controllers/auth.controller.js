@@ -17,6 +17,7 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const zod_1 = require("zod");
 const prisma_1 = __importDefault(require("../utils/prisma"));
+const email_1 = require("../utils/email");
 const registerSchema = zod_1.z.object({
     name: zod_1.z.string().min(2, 'Name must be at least 2 characters'),
     email: zod_1.z.string().email('Invalid email address'),
@@ -33,28 +34,32 @@ const register = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
             where: { email: validatedData.email }
         });
         if (existingUser) {
-            return res.status(409).json({ success: false, message: 'Email already in use' });
+            return res.status(409).json({
+                success: false,
+                message: 'Email already in use'
+            });
         }
         const salt = yield bcrypt_1.default.genSalt(10);
         const passwordHash = yield bcrypt_1.default.hash(validatedData.password, salt);
-        const user = yield prisma_1.default.user.create({
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresInMinutes = Number(process.env.OTP_EXPIRES_MINUTES || 10);
+        const otpExpiresAt = new Date(Date.now() + expiresInMinutes * 60 * 1000);
+        yield prisma_1.default.user.create({
             data: {
                 name: validatedData.name,
                 email: validatedData.email,
-                passwordHash
+                passwordHash,
+                otpCode: otp,
+                otpExpiresAt,
+                emailVerified: false
             }
         });
-        const token = jsonwebtoken_1.default.sign({ userId: user.id }, process.env.JWT_SECRET || 'supersecretkey', { expiresIn: '7d' });
+        yield (0, email_1.sendOtpEmail)(validatedData.email, otp);
         res.status(201).json({
             success: true,
-            message: 'User registered successfully',
+            message: 'Verification code sent to your email',
             data: {
-                token,
-                user: {
-                    id: user.id,
-                    name: user.name,
-                    email: user.email
-                }
+                email: validatedData.email
             }
         });
     }
