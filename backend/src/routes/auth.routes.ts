@@ -4,14 +4,17 @@ import {
   login,
   getMe,
   logout,
-  verifyOtp
-} from '../controllers/auth.controller';import { authenticate } from '../middlewares/auth.middleware';
+  verifyOtp,
+  resendOtp,
+} from '../controllers/auth.controller';
+import { authenticate } from '../middlewares/auth.middleware';
 import { authRateLimiter } from '../middlewares/rateLimiter.middleware';
 
 const router = Router();
 
 router.post('/register', authRateLimiter, register);
 router.post('/verify-otp', authRateLimiter, verifyOtp);
+router.post('/resend-otp', authRateLimiter, resendOtp);
 router.post('/login', authRateLimiter, login);
 router.post('/logout', logout);
 router.get('/me', authenticate, getMe);

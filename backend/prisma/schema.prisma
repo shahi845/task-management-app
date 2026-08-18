@@ -13,10 +13,12 @@ model User {
   name            String
   email           String   @unique
   passwordHash    String
-  emailVerified   Boolean  @default(false)
-  otpCode         String?
-  otpExpiresAt    DateTime?
-  createdAt       DateTime @default(now())
+  emailVerified    Boolean   @default(false)
+  otpCode          String?
+  otpExpiresAt     DateTime?
+  otpRequestCount  Int       @default(0)
+  otpWindowStart   DateTime?
+  createdAt        DateTime  @default(now())
   updatedAt       DateTime @updatedAt
   tasks           Task[]
 }

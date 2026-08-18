@@ -10,6 +10,12 @@ import { rateLimiter } from './middlewares/rateLimiter.middleware';
 
 dotenv.config();
 
+// P10: Fail fast if critical secrets are missing — never fall back to weak defaults
+if (!process.env.JWT_SECRET) {
+  console.error('FATAL: JWT_SECRET environment variable is not set. Refusing to start.');
+  process.exit(1);
+}
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 

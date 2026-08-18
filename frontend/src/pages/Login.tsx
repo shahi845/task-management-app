@@ -42,6 +42,17 @@ const Login = () => {
         navigate('/dashboard');
       }
     } catch (err: any) {
+      // P6: Backend returns requiresVerification when the account exists but
+      // the email hasn't been verified yet — redirect straight to the OTP screen.
+      if (err.response?.data?.requiresVerification) {
+        navigate('/register', {
+          state: {
+            pendingVerification: true,
+            email: err.response.data.data?.email ?? data.email,
+          }
+        });
+        return;
+      }
       setError(err.response?.data?.message || 'An error occurred during login');
     } finally {
       setLoading(false);
