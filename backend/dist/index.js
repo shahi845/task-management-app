@@ -13,6 +13,11 @@ const task_routes_1 = __importDefault(require("./routes/task.routes"));
 const error_middleware_1 = require("./middlewares/error.middleware");
 const rateLimiter_middleware_1 = require("./middlewares/rateLimiter.middleware");
 dotenv_1.default.config();
+// P10: Fail fast if critical secrets are missing — never fall back to weak defaults
+if (!process.env.JWT_SECRET) {
+    console.error('FATAL: JWT_SECRET environment variable is not set. Refusing to start.');
+    process.exit(1);
+}
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5000;
 // Middleware

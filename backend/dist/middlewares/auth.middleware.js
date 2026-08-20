@@ -12,7 +12,7 @@ const authenticate = (req, res, next) => {
         return res.status(401).json({ success: false, message: 'Authentication required' });
     }
     try {
-        const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET || 'supersecretkey');
+        const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
         req.user = { userId: decoded.userId };
         next();
     }
