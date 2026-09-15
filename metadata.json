@@ -1,0 +1,6 @@
+{
+  "name": "TaskFlow",
+  "description": "A full-stack task management application with authentication, task organization, status tracking, and priority filters.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

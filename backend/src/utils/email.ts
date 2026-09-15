@@ -12,6 +12,11 @@ export const sendOtpEmail = async (
   email: string,
   otp: string
 ): Promise<void> => {
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.log(`[TaskFlow Dev Mode] SMTP credentials not set. OTP for ${email}: ${otp}`);
+    return;
+  }
+
   try {
     await transporter.sendMail({
       from: `"TaskFlow" <${process.env.SMTP_USER}>`,
