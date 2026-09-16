@@ -11,7 +11,12 @@ const taskSchema = z.object({
   description: z.string().optional().nullable(),
   status: z.enum(['TODO', 'IN_PROGRESS', 'COMPLETED']).optional(),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).optional(),
-  dueDate: z.string().datetime().optional().nullable()
+  dueDate: z
+    .string()
+    .optional()
+    .nullable()
+    .refine((val) => !val || !isNaN(Date.parse(val)), { message: 'Invalid date' })
+    .transform((val) => (val ? new Date(val).toISOString() : null))
 });
 
 export const createTask = async (req: AuthRequest, res: Response, next: NextFunction) => {

@@ -32,6 +32,24 @@ async function startServer() {
   app.use(morgan('dev'));
   app.use(express.json());
 
+  // Server Connection & Health Check (no rate-limit)
+  const healthCheckHandler = (_req: express.Request, res: express.Response) => {
+    res.json({
+      status: 'ok',
+      connected: true,
+      message: 'TaskFlow Server is connected and active',
+      time: new Date().toISOString(),
+      uptimeSeconds: Math.floor(process.uptime()),
+      environment: process.env.NODE_ENV || 'development',
+      service: 'taskflow-backend',
+      database: 'connected',
+    });
+  };
+
+  app.get('/api/health', healthCheckHandler);
+  app.get('/api/server/status', healthCheckHandler);
+  app.get('/health', healthCheckHandler);
+
   // API Routes
   const authRouter = (authRoutes as any).default || authRoutes;
   const taskRouter = (taskRoutes as any).default || taskRoutes;
@@ -41,9 +59,6 @@ async function startServer() {
   app.use('/api/auth', authRouter);
   app.use('/api/tasks', taskRouter);
 
-  app.get('/api/health', (_req, res) => {
-    res.json({ status: 'ok', time: new Date().toISOString() });
-  });
 
   // API error handler
   app.use('/api', errorMiddleware);

@@ -15,7 +15,9 @@ import {
   CardHeader,
   CardTitle,
 } from '../components/ui/Card';
-import { CheckSquare, ArrowLeft, KeyRound, CheckCircle2, RefreshCw } from 'lucide-react';
+import { CheckSquare, ArrowLeft, KeyRound, CheckCircle2, RefreshCw, Eye, EyeOff } from 'lucide-react';
+import { ServerStatusBadge } from '../components/ServerStatusBadge';
+
 
 const requestSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -70,6 +72,8 @@ const ForgotPassword = () => {
 
   const [step, setStep] = useState<'request' | 'reset' | 'success'>('request');
   const [email, setEmail] = useState(initialEmail);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -156,12 +160,14 @@ const ForgotPassword = () => {
   return (
     <div className="min-h-screen bg-muted/40 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="flex justify-center mb-8">
+        <div className="flex flex-col items-center justify-center mb-6 gap-3">
           <Link to="/login" className="bg-primary p-3 rounded-xl shadow-lg shadow-primary/20 flex items-center gap-2 hover:opacity-95 transition-opacity">
             <CheckSquare className="w-8 h-8 text-white" />
             <span className="text-white font-bold text-2xl tracking-tight pr-2">TaskFlow</span>
           </Link>
+          <ServerStatusBadge showDetails size="sm" />
         </div>
+
 
         <Card className="border-0 shadow-xl">
           {step === 'request' && (
@@ -269,13 +275,23 @@ const ForgotPassword = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="newPassword">New Password</Label>
-                    <Input
-                      id="newPassword"
-                      type="password"
-                      placeholder="••••••••"
-                      {...registerReset('newPassword')}
-                      className={resetErrors.newPassword ? 'border-destructive focus-visible:ring-destructive' : ''}
-                    />
+                    <div className="relative">
+                      <Input
+                        id="newPassword"
+                        type={showNewPassword ? 'text' : 'password'}
+                        placeholder="••••••••"
+                        {...registerReset('newPassword')}
+                        className={`pr-10 ${resetErrors.newPassword ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword((prev) => !prev)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
+                        aria-label={showNewPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
                     {resetErrors.newPassword && (
                       <p className="text-sm text-destructive font-medium">{resetErrors.newPassword.message}</p>
                     )}
@@ -283,13 +299,23 @@ const ForgotPassword = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                    <Input
-                      id="confirmPassword"
-                      type="password"
-                      placeholder="••••••••"
-                      {...registerReset('confirmPassword')}
-                      className={resetErrors.confirmPassword ? 'border-destructive focus-visible:ring-destructive' : ''}
-                    />
+                    <div className="relative">
+                      <Input
+                        id="confirmPassword"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        placeholder="••••••••"
+                        {...registerReset('confirmPassword')}
+                        className={`pr-10 ${resetErrors.confirmPassword ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword((prev) => !prev)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
+                        aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
                     {resetErrors.confirmPassword && (
                       <p className="text-sm text-destructive font-medium">{resetErrors.confirmPassword.message}</p>
                     )}

@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/Button';
 import { LogOut, User, CheckSquare } from 'lucide-react';
+import { ServerStatusBadge } from '../ServerStatusBadge';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -13,17 +14,22 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="border-b bg-card px-6 py-3 flex items-center justify-between sticky top-0 z-50 shadow-sm">
-      <div className="flex items-center gap-2">
+    <nav className="border-b bg-card px-4 sm:px-6 py-3 flex items-center justify-between sticky top-0 z-40 shadow-sm">
+      <div className="flex items-center gap-3">
         <div className="bg-primary/10 p-2 rounded-lg text-primary">
           <CheckSquare className="w-5 h-5" />
         </div>
         <span className="font-bold text-xl tracking-tight hidden sm:block">TaskFlow</span>
+        
+        {/* Live Server Connection Badge */}
+        <div className="ml-2">
+          <ServerStatusBadge showDetails size="sm" />
+        </div>
       </div>
 
       <div className="flex items-center gap-4">
         {user && (
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-full">
               <User className="w-4 h-4" />
               <span>{user.name}</span>
@@ -38,5 +44,6 @@ const Navbar = () => {
     </nav>
   );
 };
+
 
 export default Navbar;

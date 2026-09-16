@@ -8,7 +8,9 @@ import api from '../api/axios';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Label } from '../components/ui/Label';
+import { ServerStatusBadge } from '../components/ServerStatusBadge';
 import {
+
   CheckSquare,
   Eye,
   EyeOff,
@@ -274,7 +276,7 @@ const Login = () => {
               <span className="inline-flex items-center gap-1">
                 <Lock className="w-3 h-3 text-emerald-500" /> 256-bit SSL encrypted
               </span>
-              <span>v1.0 &bull; Production Ready</span>
+              <ServerStatusBadge showDetails size="sm" />
             </div>
           </div>
         </div>
@@ -291,25 +293,34 @@ const Login = () => {
               </div>
               <span className="text-xl font-bold tracking-tight text-slate-900">TaskFlow</span>
             </Link>
-            <button
-              type="button"
-              onClick={handleQuickDemoFill}
-              className="text-xs font-medium px-2.5 py-1 rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-            >
-              Demo fill
-            </button>
+            <div className="flex items-center gap-2">
+              <ServerStatusBadge size="sm" />
+              <button
+                type="button"
+                onClick={handleQuickDemoFill}
+                className="text-xs font-medium px-2.5 py-1 rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+              >
+                Demo
+              </button>
+            </div>
           </div>
 
           <div className="max-w-md w-full mx-auto my-auto space-y-6">
             {/* Header */}
             <div className="space-y-1.5 text-center sm:text-left">
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
-                Welcome back
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+                  Welcome back
+                </h2>
+                <div className="hidden sm:block">
+                  <ServerStatusBadge showDetails size="sm" />
+                </div>
+              </div>
               <p className="text-sm text-slate-500">
                 Enter your credentials to access your TaskFlow account.
               </p>
             </div>
+
 
             {/* Social / Alternative Login Section */}
             <div className="space-y-3 pt-1">

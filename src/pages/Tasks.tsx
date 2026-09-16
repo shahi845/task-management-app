@@ -19,6 +19,7 @@ const Tasks = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
 
   const fetchTasks = async () => {
     setLoading(true);
@@ -64,16 +65,24 @@ const Tasks = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this task?')) {
-      try {
-        await api.delete(`/tasks/${id}`);
-        setTasks(tasks.filter(t => t.id !== id));
-      } catch (error) {
-        console.error("Failed to delete task", error);
-      }
+  const confirmDelete = async () => {
+    if (!taskToDelete) return;
+    try {
+      await api.delete(`/tasks/${taskToDelete.id}`);
+      setTasks(tasks.filter(t => t.id !== taskToDelete.id));
+      setTaskToDelete(null);
+    } catch (error) {
+      console.error("Failed to delete task", error);
     }
   };
+
+  const handleDelete = (id: string) => {
+    const task = tasks.find(t => t.id === id);
+    if (task) {
+      setTaskToDelete(task);
+    }
+  };
+
 
   const handleStatusChange = async (id: string, status: Task['status']) => {
     try {
@@ -264,8 +273,37 @@ const Tasks = () => {
         initialData={editingTask}
         loading={submitting}
       />
+
+      {/* Custom Confirmation Modal for Deletion (iframe-safe) */}
+      {taskToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-card border rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4">
+            <h3 className="text-lg font-bold">Delete Task?</h3>
+            <p className="text-sm text-muted-foreground">
+              Are you sure you want to permanently delete <strong className="text-foreground">"{taskToDelete.title}"</strong>? This action cannot be undone.
+            </p>
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setTaskToDelete(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={confirmDelete}
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
 
 export default Tasks;

@@ -1,12 +1,15 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import type { ReactElement } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ServerProvider } from './contexts/ServerContext';
+import { ServerConnectionAlert } from './components/ServerStatusBadge';
 import Layout from './components/layout/Layout';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './pages/Dashboard';
 import Tasks from './pages/Tasks';
+
 
 const ProtectedRoute = ({ children }: { children: ReactElement }) => {
   const { user, loading } = useAuth();
@@ -54,11 +57,14 @@ function AppRoutes() {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <AppRoutes />
-      </Router>
-    </AuthProvider>
+    <ServerProvider>
+      <AuthProvider>
+        <ServerConnectionAlert />
+        <Router>
+          <AppRoutes />
+        </Router>
+      </AuthProvider>
+    </ServerProvider>
   );
 }
 
